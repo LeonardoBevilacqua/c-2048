@@ -172,15 +172,8 @@ int move_down(int grid[GRID_SIZE][GRID_SIZE])
     return has_moved_once;
 }
 
-int main(int argc, char *argv[])
+int handle_game_loop(int grid[GRID_SIZE][GRID_SIZE])
 {
-    int grid[GRID_SIZE][GRID_SIZE] = { { 0 } };
-
-    init_term();
-    signal(SIGINT, handle_sigint);
-    enable_raw_mode();
-    srand(time(NULL));
-
     assign_to_empty_rand_position(grid);
 
     while (1) {
@@ -208,6 +201,18 @@ int main(int argc, char *argv[])
         if (has_moved) assign_to_empty_rand_position(grid);
         clear_term();
     }
+}
+
+int main(int argc, char *argv[])
+{
+    int grid[GRID_SIZE][GRID_SIZE] = { { 0 } };
+
+    init_term();
+    signal(SIGINT, handle_sigint);
+    enable_raw_mode();
+    srand(time(NULL));
+
+    handle_game_loop(grid);
 
     disable_raw_mode();
     reset_term();
