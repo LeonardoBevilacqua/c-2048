@@ -189,15 +189,19 @@ int main(int argc, char *argv[])
         char key = getchar();
         switch (key) {
             case 'a':
+            case 68:
             has_moved = move_left(grid);
             break;
             case 'd':
+            case 67:
             has_moved = move_right(grid);
             break;
             case 'w':
+            case 65:
             has_moved = move_up(grid);
             break;
             case 's':
+            case 66:
             has_moved = move_down(grid);
             break;
         }
