@@ -40,8 +40,8 @@ void move_to_empty_tile(
     int row, int col,
     int row_offset, int col_offset)
 {
-    if (grid[row][col + col_offset] == 0) {
-        grid[row][col + col_offset] = grid[row][col];
+    if (grid[row + row_offset][col + col_offset] == 0) {
+        grid[row + row_offset][col + col_offset] = grid[row][col];
         grid[row][col] = 0;
     }
 }
@@ -57,8 +57,24 @@ void move_right(int grid[GRID_SIZE][GRID_SIZE])
 void move_left(int grid[GRID_SIZE][GRID_SIZE])
 {
     for (int i = 0; i < GRID_SIZE; ++i) {
-        for (int j = GRID_SIZE; j > 0; --j)
+        for (int j = GRID_SIZE - 1; j > 0; --j)
             move_to_empty_tile(grid, i, j, 0, -1);
+    }
+}
+
+void move_up(int grid[GRID_SIZE][GRID_SIZE])
+{
+    for (int i = GRID_SIZE - 1; i > 0; --i) {
+        for (int j = 0; j < GRID_SIZE - 1; ++j)
+            move_to_empty_tile(grid, i, j, -1, 0);
+    }
+}
+
+void move_down(int grid[GRID_SIZE][GRID_SIZE])
+{
+    for (int i = 0; i < GRID_SIZE - 1; ++i) {
+        for (int j = 0; j < GRID_SIZE - 1; ++j)
+            move_to_empty_tile(grid, i, j, 1, 0);
     }
 }
 
@@ -72,6 +88,10 @@ int main(int argc, char *argv[])
     move_right(grid);
     print_board(grid);
     move_left(grid);
+    print_board(grid);
+    move_up(grid);
+    print_board(grid);
+    move_down(grid);
     print_board(grid);
 
     return 0;
