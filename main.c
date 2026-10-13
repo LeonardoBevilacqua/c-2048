@@ -172,11 +172,37 @@ int move_down(int grid[GRID_SIZE][GRID_SIZE])
     return has_moved_once;
 }
 
-int handle_game_loop(int grid[GRID_SIZE][GRID_SIZE])
+int check_neighbor_tile(int grid[GRID_SIZE][GRID_SIZE], int row, int col)
 {
+    const int neighbor_pos[4][2] = { { 0, 1 }, { 0, -1 }, { 1, 0 }, { -1, 0 } };
+    for (int i = 0; i < 4; +i++) {
+        int neighbor_row = row + neighbor_pos[i][0];
+        int neighbor_col = col + neighbor_pos[i][1];
+
+        if (is_out_of_bounds(neighbor_row) || is_out_of_bounds(neighbor_col)) continue;
+
+        if (grid[neighbor_row][neighbor_col] == 0 || grid[neighbor_row][neighbor_col] == grid[row][col])
+            return 1;
+    }
+    return 0;
+}
+
+int can_move(int grid[GRID_SIZE][GRID_SIZE])
+{
+    for (int i = 0; i < GRID_SIZE; ++i) {
+        for (int j = 0; j < GRID_SIZE; ++j)
+            if (check_neighbor_tile(grid, i, j)) return 1;
+    }
+    return 0;
+}
+
+int handle_game_loop()
+{
+    int grid[GRID_SIZE][GRID_SIZE] = { { 0 } };
+
     assign_to_empty_rand_position(grid);
 
-    while (1) {
+    while (can_move(grid)) {
         int has_moved = 0;
         print_board(grid);
         char key = getchar();
@@ -201,20 +227,26 @@ int handle_game_loop(int grid[GRID_SIZE][GRID_SIZE])
         if (has_moved) assign_to_empty_rand_position(grid);
         clear_term();
     }
+    print_board(grid);
 }
 
 int main(int argc, char *argv[])
 {
-    int grid[GRID_SIZE][GRID_SIZE] = { { 0 } };
+    char play_again = 'y';
 
     init_term();
     signal(SIGINT, handle_sigint);
-    enable_raw_mode();
     srand(time(NULL));
 
-    handle_game_loop(grid);
+    do {
+        enable_raw_mode();
+        handle_game_loop();
+        disable_raw_mode();
 
-    disable_raw_mode();
+        printf("Game over!\n");
+        printf("Play again? (Y/n) ");
+    } while (play_again = getchar() != 'n' && play_again != 'N');
+
     reset_term();
 
     return 0;
