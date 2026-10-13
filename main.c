@@ -89,64 +89,87 @@ int is_out_of_bounds(int tile)
     return tile < 0 || tile >= GRID_SIZE;
 }
 
-void move_to_empty_tile(
+int move_to_empty_tile(
     int grid[GRID_SIZE][GRID_SIZE],
     int row, int col,
     int row_offset, int col_offset)
 {
     int neighbor_row = row + row_offset;
     int neighbor_col = col + col_offset;
+    int has_moved = 0;
 
     if (is_out_of_bounds(row) || is_out_of_bounds(col) ||
-        is_out_of_bounds(neighbor_row) || is_out_of_bounds(neighbor_col)) return;
-    if (grid[row][col] == 0) return;
+        is_out_of_bounds(neighbor_row) || is_out_of_bounds(neighbor_col)) return 0;
+    if (grid[row][col] == 0) return 0;
 
     if (grid[neighbor_row][neighbor_col] > 0 && grid[neighbor_row][neighbor_col] != grid[row][col])
-        move_to_empty_tile(grid, neighbor_row, neighbor_col, row_offset, col_offset);
+        has_moved = move_to_empty_tile(grid, neighbor_row, neighbor_col, row_offset, col_offset);
 
     if (grid[neighbor_row][neighbor_col] == 0) {
         grid[neighbor_row][neighbor_col] = grid[row][col];
         grid[row][col] = 0;
-        return;
+        return 1;
     }
 
     if (grid[neighbor_row][neighbor_col] == grid[row][col]) {
         grid[neighbor_row][neighbor_col] += grid[row][col];
         grid[row][col] = 0;
-        return;
+        return 1;
     }
+
+    return has_moved;
 }
 
-void move_right(int grid[GRID_SIZE][GRID_SIZE])
+int move_right(int grid[GRID_SIZE][GRID_SIZE])
 {
+    int has_moved_once = 0;
     for (int i = 0; i < GRID_SIZE; ++i) {
-        for (int j = 0; j < GRID_SIZE - 1; ++j)
-            move_to_empty_tile(grid, i, j, 0, 1);
+        for (int j = 0; j < GRID_SIZE - 1; ++j) {
+            int has_moved = move_to_empty_tile(grid, i, j, 0, 1);
+            if (!has_moved_once) has_moved_once = has_moved;
+        }
     }
+
+    return has_moved_once;
 }
 
-void move_left(int grid[GRID_SIZE][GRID_SIZE])
+int move_left(int grid[GRID_SIZE][GRID_SIZE])
 {
+    int has_moved_once = 0;
     for (int i = 0; i < GRID_SIZE; ++i) {
-        for (int j = GRID_SIZE - 1; j > 0; --j)
-            move_to_empty_tile(grid, i, j, 0, -1);
+        for (int j = GRID_SIZE - 1; j > 0; --j) {
+            int has_moved = move_to_empty_tile(grid, i, j, 0, -1);
+            if (!has_moved_once) has_moved_once = has_moved;
+        }
     }
+
+    return has_moved_once;
 }
 
-void move_up(int grid[GRID_SIZE][GRID_SIZE])
+int move_up(int grid[GRID_SIZE][GRID_SIZE])
 {
+    int has_moved_once = 0;
     for (int j = 0; j < GRID_SIZE; ++j) {
-    for (int i = GRID_SIZE - 1; i > 0; --i)
-            move_to_empty_tile(grid, i, j, -1, 0);
+        for (int i = GRID_SIZE - 1; i > 0; --i) {
+            int has_moved = move_to_empty_tile(grid, i, j, -1, 0);
+            if (!has_moved_once) has_moved_once = has_moved;
+        }
     }
+
+    return has_moved_once;
 }
 
-void move_down(int grid[GRID_SIZE][GRID_SIZE])
+int move_down(int grid[GRID_SIZE][GRID_SIZE])
 {
+    int has_moved_once = 0;
     for (int j = 0; j < GRID_SIZE; ++j) {
-        for (int i = 0; i < GRID_SIZE - 1; ++i)
-            move_to_empty_tile(grid, i, j, 1, 0);
+        for (int i = 0; i < GRID_SIZE - 1; ++i) {
+            int has_moved = move_to_empty_tile(grid, i, j, 1, 0);
+            if (!has_moved_once) has_moved_once = has_moved;
+        }
     }
+
+    return has_moved_once;
 }
 
 int main(int argc, char *argv[])
@@ -161,23 +184,24 @@ int main(int argc, char *argv[])
     assign_to_empty_rand_position(grid);
 
     while (1) {
+        int has_moved = 0;
         print_board(grid);
         char key = getchar();
         switch (key) {
             case 'a':
-            move_left(grid);
+            has_moved = move_left(grid);
             break;
             case 'd':
-            move_right(grid);
+            has_moved = move_right(grid);
             break;
             case 'w':
-            move_up(grid);
+            has_moved = move_up(grid);
             break;
             case 's':
-            move_down(grid);
+            has_moved = move_down(grid);
             break;
         }
-        assign_to_empty_rand_position(grid);
+        if (has_moved) assign_to_empty_rand_position(grid);
         clear_term();
     }
 
