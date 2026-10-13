@@ -1,8 +1,57 @@
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <termios.h>
 #include <time.h>
+#include <unistd.h>
 
 #define GRID_SIZE 4
+
+static struct termios orig_opts;
+static int is_raw_mode = 0;
+
+void init_term()
+{
+    printf("\e[?1049h"); // Enable alternate buffer
+    printf("\e[2J");     // Clean the screen
+    printf("\e[H");      // Move the cursor home
+}
+
+void clear_term()
+{
+    printf("\e[2J");     // Clean the screen
+    printf("\e[H");      // Move the cursor home
+}
+
+void reset_term()
+{
+    clear_term();
+    printf("\e[?1049l"); // Disable alternate buffer
+}
+
+void enable_raw_mode() {
+    tcgetattr(STDIN_FILENO, &orig_opts);
+    struct termios raw_opts = orig_opts;
+    // Disable canonical mode (line buffering) and local echo
+    // Note: We keep ISIG active so Ctrl+C still fires the SIGINT signal
+    raw_opts.c_lflag &= ~(ICANON | ECHO);
+
+    tcsetattr(STDIN_FILENO, TCSANOW, &raw_opts);
+    is_raw_mode = 1;
+}
+
+void disable_raw_mode() {
+    if (!is_raw_mode) return;
+    tcsetattr(STDIN_FILENO, TCSANOW, &orig_opts);
+    is_raw_mode = 0;
+}
+
+void handle_sigint(int signal)
+{
+    reset_term();
+    disable_raw_mode();
+    exit(signal);
+}
 
 void print_tile(int tile_value)
 {
@@ -102,8 +151,12 @@ void move_down(int grid[GRID_SIZE][GRID_SIZE])
 
 int main(int argc, char *argv[])
 {
-    srand(time(NULL));
     int grid[GRID_SIZE][GRID_SIZE] = { { 0 } };
+
+    init_term();
+    signal(SIGINT, handle_sigint);
+    enable_raw_mode();
+    srand(time(NULL));
 
     assign_to_empty_rand_position(grid);
     assign_to_empty_rand_position(grid);
@@ -117,5 +170,11 @@ int main(int argc, char *argv[])
     move_up(grid);
     print_board(grid);
 
+    printf("Press any key (Linux/Mac): ");
+    char ch = getchar(); // Reads instantly without Enter
+    printf("\nYou pressed: %c\n", ch);
+    disable_raw_mode();
+
+    reset_term();
     return 0;
 }
