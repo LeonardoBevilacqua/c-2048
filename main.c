@@ -159,22 +159,30 @@ int main(int argc, char *argv[])
     srand(time(NULL));
 
     assign_to_empty_rand_position(grid);
-    assign_to_empty_rand_position(grid);
-    print_board(grid);
-    move_left(grid);
-    print_board(grid);
-    move_down(grid);
-    print_board(grid);
-    move_right(grid);
-    print_board(grid);
-    move_up(grid);
-    print_board(grid);
 
-    printf("Press any key (Linux/Mac): ");
-    char ch = getchar(); // Reads instantly without Enter
-    printf("\nYou pressed: %c\n", ch);
+    while (1) {
+        print_board(grid);
+        char key = getchar();
+        switch (key) {
+            case 'a':
+            move_left(grid);
+            break;
+            case 'd':
+            move_right(grid);
+            break;
+            case 'w':
+            move_up(grid);
+            break;
+            case 's':
+            move_down(grid);
+            break;
+        }
+        assign_to_empty_rand_position(grid);
+        clear_term();
+    }
+
     disable_raw_mode();
-
     reset_term();
+
     return 0;
 }
